@@ -4,13 +4,13 @@
     https://api.github.com/users/<your name>
 */
 
-axios.get('https://api.github.com/users/christiano39')
-  .then(user => {
-    console.log(user.data)
-  })
-  .catch(err => {
-    console.log(err)
-  })
+// axios.get('https://api.github.com/users/christiano39')
+//   .then(user => {
+//     console.log(user.data)
+//   })
+//   .catch(err => {
+//     console.log(err)
+//   })
 
 /*
   STEP 2: Inspect and study the data coming back, this is YOUR
@@ -24,16 +24,48 @@ axios.get('https://api.github.com/users/christiano39')
   STEP 4: Pass the data received from Github into your function,
     and append the returned markup to the DOM as a child of .cards
 */
+function getUserAndFollowers(username){
+  const cards = document.querySelector('.cards')
+  axios.get(`https://api.github.com/users/${username}`)
+    .then(userObj => {
+      const userCard = cardMaker(userObj.data)
+      cards.appendChild(userCard)
+      return userObj.data.followers_url
+    })
+    .then(followers_url => {
+      axios.get(followers_url)
+        .then(followers => {
+          followers.data.forEach(follower => {
+            console.log(follower.login)
+            axios.get(`https://api.github.com/users/${follower.login}`)
+              .then(user => {
+                cards.appendChild(cardMaker(user.data))
+              })
+              .catch(err => {
+                console.log(err)
+              })
+          })
+        })
+        .catch(err => {
+          console.log(err)
+        })
+    })
+    .catch(err => {
+      console.log(err)
+      const errorCard = cardMaker({
+        name: 'Oops! Network Error',
+        avatar_url: 'assets/error.jpg',
+        location: '',
+        html_url: '',
+        followers: '',
+        following: '',
+        bio: ''
+      })
+      cards.appendChild(errorCard)
+    })
+}
 
-const cards = document.querySelector('.cards')
-axios.get('https://api.github.com/users/christiano39')
-  .then(userObj => {
-    const userCard = cardMaker(userObj.data)
-    cards.appendChild(userCard)
-  })
-  .catch(err => {
-    console.log(err)
-  })
+getUserAndFollowers('christiano39')
 
 /*
   STEP 5: Now that you have your own card getting added to the DOM, either
@@ -55,17 +87,17 @@ const followersArray = [
   'tsbarrett89'
 ];
 
-followersArray.forEach(follower => {
-  const url = `https://api.github.com/users/${follower}`
-  axios.get(url)
-    .then(user => {
-      const userCard = cardMaker(user.data)
-      cards.appendChild(userCard)
-    })
-    .catch(err => {
-      console.log(err)
-    })
-})
+// followersArray.forEach(follower => {
+//   const url = `https://api.github.com/users/${follower}`
+//   axios.get(url)
+//     .then(user => {
+//       const userCard = cardMaker(user.data)
+//       cards.appendChild(userCard)
+//     })
+//     .catch(err => {
+//       console.log(err)
+//     })
+// })
 
 /*
   STEP 3: Create a function that accepts a single object as its only argument.
@@ -99,11 +131,17 @@ function cardMaker(user){
   const followers = document.createElement('p')
   const following = document.createElement('p')
   const bio = document.createElement('p')
+  const expandButton = document.createElement('button')
+  const expandDiv = document.createElement('div')
+  const mainCardDiv = document.createElement('div')
 
   cardDiv.classList.add('card')
   cardInfo.classList.add('card-info')
   name.classList.add('name')
   username.classList.add('username')
+  expandDiv.classList.add('expand-div')
+  expandButton.classList.add('button')
+  mainCardDiv.classList.add('main-card')
 
   img.src = user.avatar_url
   img.alt = `Profile picture of ${user.name}`
@@ -112,10 +150,12 @@ function cardMaker(user){
   location.textContent = `Location: ${user.location}`
   profileA.href = user.html_url
   profileA.target = "_blank"
-  profileA.textContent = `Profile: ${user.html_url}`
+  profileP.textContent = 'Profile:'
+  profileA.textContent = `${user.html_url}`
   followers.textContent = `Followers: ${user.followers}`
   following.textContent = `Following: ${user.following}`
   bio.textContent = `Bio: ${user.bio}`
+  expandButton.textContent = open
 
   cardDiv.appendChild(img)
   cardInfo.appendChild(name)
@@ -127,6 +167,9 @@ function cardMaker(user){
   cardInfo.appendChild(following)
   cardInfo.appendChild(bio)
   cardDiv.appendChild(cardInfo)
+  //expandDiv.appendChild(expandButton)
+  //cardDiv.appendChild(expandDiv)
+
 
   return cardDiv
 }
