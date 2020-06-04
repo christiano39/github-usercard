@@ -62,6 +62,9 @@ followersArray.forEach(follower => {
       const userCard = cardMaker(user.data)
       cards.appendChild(userCard)
     })
+    .catch(err => {
+      console.log(err)
+    })
 })
 
 /*
