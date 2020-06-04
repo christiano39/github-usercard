@@ -65,7 +65,7 @@ function getUserAndFollowers(username){
     })
 }
 
-getUserAndFollowers('christiano39')
+getUserAndFollowers('tsbarrett89')
 
 /*
   STEP 5: Now that you have your own card getting added to the DOM, either
